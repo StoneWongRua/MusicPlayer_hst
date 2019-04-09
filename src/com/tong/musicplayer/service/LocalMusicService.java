@@ -17,7 +17,7 @@ public interface LocalMusicService {
 	List<String> findOne(String name,String time,String[] filepath);
 	
 	//搜索本地音乐
-	List<Map<String, String>> seachAll(String name,String[] filepath);
+	List<Map<String, String>> searchAll(String name,String[] filepath);
 	
 	int delete(String fstr);
 	

@@ -1,7 +1,8 @@
 package com.tong.musicplayer.impl;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 
@@ -74,28 +75,63 @@ public class LocalMusicImpl implements LocalMusicService {
 	 * @return
 	 */
 	@Override
-	public List<String> findOne(String name, String time, String[] filepath) {
-		// TODO Auto-generated method stub
-		
-		return null;
+	public List<String> findOne(String name,String time,String[] filepath) {
+		String sql="select id,filepath from music_new where music_name=? and music_time=? and filepath like '"+filepath[0]+"%'";
+		for (int i = 1,len=filepath.length; i < len; i++) {
+			sql+=" or filepath like '"+filepath[i]+"%' ";
+		}
+		sql+=";";
+		System.out.println(sql);
+		DbUtil dbH = new DbUtil();
+		List<String> list = dbH.findOneStr(sql,name,time);
+		return list;
 	}
-
+	
 	@Override
-	public List<Map<String, String>> seachAll(String name, String[] filepath) {
+	public List<Map<String, String>> searchAll(String name, String[] filepath) {
 		// TODO Auto-generated method stub
-		return null;
+		DbUtil db = new DbUtil();
+		List<Map<String, String>> list = null;
+		if(!"".equals(name)) {
+			String sql = "select music_name, singer, collection, music_time, music_size from music_new where music_name like '" + name + "%' or music_name like '%" + 
+							name + "' or music_name like '%" + name + "%' and filepath like '"+filepath[0]+"%'";
+			for (int i = 1,len=filepath.length; i < len; i++) {
+				sql+=" or filepath like '"+filepath[i]+"%' ";
+			}
+			sql+=";";
+			System.out.println(sql);
+			list = db.findStr(sql);
+		}
+		
+		return list;
 	}
 
 	@Override
 	public int delete(String fstr) {
 		// TODO Auto-generated method stub
-		return 0;
+		DbUtil db = new DbUtil();
+		String sql_1 = "delete from music_new where filepath = ?";
+		String sql_2 = "select id from music_new where filepath = ?";
+		List<Map<String, String>> list = db.findStr(sql_2, fstr);
+		if(list != null && list.size()>0) {
+			sql_2 = "delete from recentlist where id = ?";
+			db.update(sql_2, list.get(0).get("id"));
+		}
+		int result = db.update(sql_1, fstr);
+		return result;
 	}
 
 	@Override
 	public List<String> findSeg(String[] filepath) {
 		// TODO Auto-generated method stub
-		return null;
+		String sql = "select filepath from music_new where filepath like '" + filepath[0] + "%'";
+		for (int i = 1,len=filepath.length; i < len; i++) {
+			sql+=" or filepath like '"+filepath[i]+"%' ";
+		}
+		DbUtil db = new DbUtil();
+		List<String> list = db.findOneStr(sql);
+		return list;
+		
 	}
 
 }
